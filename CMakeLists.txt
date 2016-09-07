@@ -179,5 +179,23 @@ if (PYBIND11_TEST)
 endif()
 
 if (PYBIND11_INSTALL)
-  install(FILES ${PYBIND11_HEADERS} DESTINATION include/pybind11)
+  set(PYBIND11_HEADERS
+    include/pybind11/attr.h
+    include/pybind11/cast.h
+    include/pybind11/common.h
+    include/pybind11/complex.h
+    include/pybind11/descr.h
+    include/pybind11/eigen.h
+    include/pybind11/functional.h
+    include/pybind11/numpy.h
+    include/pybind11/operators.h
+    include/pybind11/pybind11.h
+    include/pybind11/pytypes.h
+    include/pybind11/stl.h
+    include/pybind11/stl_bind.h
+    include/pybind11/typeid.h
+  )
+
+  include(GNUInstallDirs)
+  install(FILES ${PYBIND11_HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/pybind11)
 endif()
