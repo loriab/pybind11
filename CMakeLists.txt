@@ -175,5 +175,6 @@ if (PYBIND11_INSTALL)
     include/pybind11/typeid.h
   )
 
-  install(FILES ${PYBIND11_HEADERS} DESTINATION include/pybind11)
+  include(GNUInstallDirs)
+  install(FILES ${PYBIND11_HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/pybind11)
 endif()
