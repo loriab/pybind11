@@ -51,6 +51,33 @@ set(PYTHON_LIBRARIES ${PYTHON_LIBRARIES} CACHE INTERNAL "")
 set(PYTHON_MODULE_PREFIX ${PYTHON_MODULE_PREFIX} CACHE INTERNAL "")
 set(PYTHON_MODULE_EXTENSION ${PYTHON_MODULE_EXTENSION} CACHE INTERNAL "")
 
+# Build an interface library target:
+
+add_library(pybind11 INTERFACE)
+target_include_directories(pybind11 INTERFACE
+                           $<BUILD_INTERFACE:${PYBIND11_INCLUDE_DIR}>
+                           $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+                           INTERFACE ${PYTHON_INCLUDE_DIRS})
+
+if(WIN32 OR CYGWIN)  # untested
+    target_link_libraries(pybind11 INTERFACE
+                          ${PYTHON_LIBRARIES})
+elseif(APPLE)  # untested
+    target_compile_options(pybind11 INTERFACE "-undefined dynamic_lookup")
+    #set_target_properties(pybind11 PROPERTIES COMPILE_FLAGS "-undefined dynamic_lookup")
+endif()
+
+if(NOT MSVC)  # untested
+    # Make sure C++11/14 are enabled
+    target_compile_options(pybind11 INTERFACE ${PYBIND11_CPP_STANDARD})
+    # TODO not getting transitive here: target_compile_options(${target_name} PUBLIC ${PYBIND11_CPP_STANDARD})
+endif()
+
+
+
+
+
+
 # Build a Python extension module:
 # pybind11_add_module(<name> source1 [source2 ...])
 #
@@ -177,5 +204,25 @@ if (PYBIND11_INSTALL)
   )
 
   include(GNUInstallDirs)
-  install(FILES ${PYBIND11_HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/pybind11)
+  include(CMakePackageConfigHelpers)
+
+  install(FILES ${PYBIND11_HEADERS}
+          DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/pybind11)
+  install(TARGETS pybind11
+          EXPORT "${PROJECT_NAME}Targets")
+
+      # explicit "share" not "DATADIR" for CMake search path
+  set(CMAKECONFIG_INSTALL_DIR "share/cmake/${PROJECT_NAME}")
+  configure_package_config_file(tools/${PROJECT_NAME}Config.cmake.in
+                                "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
+                                INSTALL_DESTINATION ${CMAKECONFIG_INSTALL_DIR})
+  #write_basic_package_version_file(${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake
+  #                                 VERSION ${${PROJECT_NAME}_VERSION}
+  #                                 COMPATIBILITY SameMajorVersion)
+  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake
+  #              ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake
+          DESTINATION ${CMAKECONFIG_INSTALL_DIR})
+  install(EXPORT "${PROJECT_NAME}Targets"
+          NAMESPACE "${PROJECT_NAME}::"
+          DESTINATION ${CMAKECONFIG_INSTALL_DIR})
 endif()
