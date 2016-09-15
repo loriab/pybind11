@@ -63,8 +63,9 @@ if(WIN32 OR CYGWIN)  # untested
     target_link_libraries(pybind11 INTERFACE
                           ${PYTHON_LIBRARIES})
 elseif(APPLE)  # untested
-    target_compile_options(pybind11 INTERFACE "-undefined dynamic_lookup")
+    #target_compile_options(pybind11 INTERFACE "-undefined dynamic_lookup")
     #set_target_properties(pybind11 PROPERTIES COMPILE_FLAGS "-undefined dynamic_lookup")
+    target_link_libraries(pybind11 INTERFACE "-undefined dynamic_lookup")
 endif()
 
 if(NOT MSVC)  # untested
