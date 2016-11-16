@@ -211,6 +211,7 @@ if (PYBIND11_INSTALL)
   set(PYBIND11_HEADERS
     include/pybind11/attr.h
     include/pybind11/cast.h
+    include/pybind11/chrono.h
     include/pybind11/common.h
     include/pybind11/complex.h
     include/pybind11/descr.h
@@ -219,6 +220,7 @@ if (PYBIND11_INSTALL)
     include/pybind11/functional.h
     include/pybind11/numpy.h
     include/pybind11/operators.h
+    include/pybind11/options.h
     include/pybind11/pybind11.h
     include/pybind11/pytypes.h
     include/pybind11/stl.h
