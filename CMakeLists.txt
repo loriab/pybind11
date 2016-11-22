@@ -182,26 +182,35 @@ endif()
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
 
-if(CMAKE_VERSION VERSION_GREATER 3.0.1)
+if(NOT (CMAKE_VERSION VERSION_LESS 3.0))  # CMake >= 3.0
+
+  file(STRINGS "${PYBIND11_INCLUDE_DIR}/pybind11/common.h" pybind11_version_defines
+       REGEX "#define PYBIND11_VERSION_(MAJOR|MINOR|PATCH) ")
+  foreach(ver ${pybind11_version_defines})
+    if (ver MATCHES "#define PYBIND11_VERSION_(MAJOR|MINOR|PATCH) +([^ ]+)$")
+      set(PYBIND11_VERSION_${CMAKE_MATCH_1} "${CMAKE_MATCH_2}" CACHE INTERNAL "")
+    endif()
+  endforeach()
+  set(${PROJECT_NAME}_VERSION ${PYBIND11_VERSION_MAJOR}.${PYBIND11_VERSION_MINOR}.${PYBIND11_VERSION_PATCH})
+
   # Build an interface library target:
   #   Though any project using pybind11 will need to include python headers and
   #   define c++11/14-ness, these are not included as interface includes or compile
   #   defs because (1) that's really the domain of the upstream project to decide,
   #   (2) we can get away with it since installation (headers) don't care about
   #   python version or C++ standard, and (3) this will make the easily target relocatable.
-  add_library(pb11 INTERFACE)
-  set_target_properties(pb11 PROPERTIES EXPORT_NAME "pybind11")
-  target_include_directories(pb11 INTERFACE $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
+  add_library(pybind11 INTERFACE)
+  target_include_directories(pybind11 INTERFACE $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
   if(APPLE)
-      target_link_libraries(pb11 INTERFACE "-undefined dynamic_lookup")
+      target_link_libraries(pybind11 INTERFACE "-undefined dynamic_lookup")
   endif()
 endif()
 
 if (PYBIND11_INSTALL)
   install(FILES ${PYBIND11_HEADERS}
           DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/pybind11)
-  if(CMAKE_VERSION VERSION_GREATER 3.0.1)
-    install(TARGETS pb11
+  if(NOT (CMAKE_VERSION VERSION_LESS 3.0))
+    install(TARGETS pybind11
             EXPORT "${PROJECT_NAME}Targets")
 
         # explicit "share" not "DATADIR" for CMake search path
@@ -210,14 +219,15 @@ if (PYBIND11_INSTALL)
                                   "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
                                   INSTALL_DESTINATION ${CMAKECONFIG_INSTALL_DIR})
     write_basic_package_version_file(${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake
-                                     VERSION 1.8
-                                     #VERSION ${${PROJECT_NAME}_VERSION}
+                                     VERSION ${${PROJECT_NAME}_VERSION}
                                      COMPATIBILITY AnyNewerVersion)
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake
                   ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake
+                  tools/FindPythonLibsNew.cmake
             DESTINATION ${CMAKECONFIG_INSTALL_DIR})
     install(EXPORT "${PROJECT_NAME}Targets"
             NAMESPACE "${PROJECT_NAME}::"
             DESTINATION ${CMAKECONFIG_INSTALL_DIR})
+    message(STATUS "Exporting ${PROJECT_NAME}::pybind11 interface library target version ${${PROJECT_NAME}_VERSION}")
   endif()
 endif()
