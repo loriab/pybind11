@@ -54,7 +54,7 @@ configure_file(test_cmake_target.sh test_cmake_target.sh @ONLY)
 configure_file(test_cmake_target/main.cpp test_cmake_target/main.cpp @ONLY)
 configure_file(test_cmake_target/CMakeLists.txt test_cmake_target/CMakeLists.txt @ONLY)
 add_custom_target(test_cmtgt
-    COMMAND bash test_cmake_target.sh
+    COMMAND bash -x test_cmake_target.sh
     WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/tests
     COMMENT "Testing exported target")
 
