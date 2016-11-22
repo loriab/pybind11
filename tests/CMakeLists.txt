@@ -49,6 +49,15 @@ endif()
 
 string(REPLACE ".cpp" ".py" PYBIND11_PYTEST_FILES "${PYBIND11_TEST_FILES}")
 
+# bash-based cmake target test
+configure_file(test_cmake_target.sh test_cmake_target.sh @ONLY)
+configure_file(test_cmake_target/main.cpp test_cmake_target/main.cpp @ONLY)
+configure_file(test_cmake_target/CMakeLists.txt test_cmake_target/CMakeLists.txt @ONLY)
+add_custom_target(test_cmtgt
+    COMMAND bash test_cmake_target.sh
+    WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/tests
+    COMMENT "Testing exported target")
+
 # Check if Eigen is available; if not, remove from PYBIND11_TEST_FILES (but
 # keep it in PYBIND11_PYTEST_FILES, so that we get the "eigen is not installed"
 # skip message).
@@ -98,7 +107,7 @@ endif()
 
 # A single command to compile and run the tests
 add_custom_target(pytest COMMAND ${PYTHON_EXECUTABLE} -m pytest -rws ${PYBIND11_PYTEST_FILES}
-                  DEPENDS pybind11_tests WORKING_DIRECTORY ${testdir})
+                  DEPENDS pybind11_tests test_cmtgt WORKING_DIRECTORY ${testdir})
 
 if(PYBIND11_TEST_OVERRIDE)
   add_custom_command(TARGET pytest POST_BUILD
