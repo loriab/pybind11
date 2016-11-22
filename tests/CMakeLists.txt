@@ -105,6 +105,20 @@ if(PYBIND11_TEST_OVERRIDE)
     COMMAND ${CMAKE_COMMAND} -E echo "Note: not all tests run: -DPYBIND11_TEST_OVERRIDE is in effect")
 endif()
 
+# bash-based cmake target test
+configure_file(test_cmake_target.sh test_cmake_target.sh @ONLY)
+configure_file(test_cmake_target/main.cpp test_cmake_target/main.cpp @ONLY)
+configure_file(test_cmake_target/CMakeLists.txt test_cmake_target/CMakeLists.txt @ONLY)
+if(CMAKE_VERSION VERSION_LESS 3.0)
+    add_custom_command(TARGET pytest POST_BUILD
+        COMMENT "Skipping test of exported target for CMake < 3.0")
+else()
+    add_custom_command(TARGET pytest POST_BUILD
+        COMMAND bash -x test_cmake_target.sh
+        WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/tests
+        COMMENT "Testing exported target")
+endif()
+
 # And another to show the .so size and, if a previous size, compare it:
 add_custom_command(TARGET pybind11_tests POST_BUILD
     COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/libsize.py
