@@ -112,8 +112,7 @@ endif()
 
 # A single command to compile and run the tests
 add_custom_target(pytest COMMAND ${PYTHON_EXECUTABLE} -m pytest -rws ${PYBIND11_PYTEST_FILES}
-                  DEPENDS pybind11_tests WORKING_DIRECTORY ${testdir})
-                  #DEPENDS pybind11_tests test_cmtgt WORKING_DIRECTORY ${testdir})
+                  DEPENDS pybind11_tests test_cmtgt WORKING_DIRECTORY ${testdir})
 
 if(PYBIND11_TEST_OVERRIDE)
   add_custom_command(TARGET pytest POST_BUILD
