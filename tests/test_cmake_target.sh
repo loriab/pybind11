@@ -10,7 +10,8 @@ cd tests/test_cmake_target/
 cmake -H. -Bbuild \
       -DCMAKE_CXX_COMPILER=@CMAKE_CXX_COMPILER@ \
       -DCMAKE_PREFIX_PATH=@CMAKE_INSTALL_PREFIX@ \
-      -DPYBIND11_CPP_STANDARD="@PYBIND11_CPP_STANDARD@"
+      -DPYBIND11_CPP_STANDARD="@PYBIND11_CPP_STANDARD@" \
+      -DPythonLibsNew_FIND_VERSION="@PYBIND11_PYTHON_VERSION@"
 cd build && make
 
 # test importable
