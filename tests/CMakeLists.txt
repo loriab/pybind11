@@ -53,10 +53,15 @@ string(REPLACE ".cpp" ".py" PYBIND11_PYTEST_FILES "${PYBIND11_TEST_FILES}")
 configure_file(test_cmake_target.sh test_cmake_target.sh @ONLY)
 configure_file(test_cmake_target/main.cpp test_cmake_target/main.cpp @ONLY)
 configure_file(test_cmake_target/CMakeLists.txt test_cmake_target/CMakeLists.txt @ONLY)
-add_custom_target(test_cmtgt
-    COMMAND bash -x test_cmake_target.sh
-    WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/tests
-    COMMENT "Testing exported target")
+if(CMAKE_VERSION VERSION_LESS 3.0)
+    add_custom_target(test_cmtgt
+        COMMENT "Skipping test of exported target for CMake < 3.0")
+else()
+    add_custom_target(test_cmtgt
+        COMMAND bash -x test_cmake_target.sh
+        WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/tests
+        COMMENT "Testing exported target")
+endif()
 
 # Check if Eigen is available; if not, remove from PYBIND11_TEST_FILES (but
 # keep it in PYBIND11_PYTEST_FILES, so that we get the "eigen is not installed"
