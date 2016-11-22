@@ -49,19 +49,6 @@ endif()
 
 string(REPLACE ".cpp" ".py" PYBIND11_PYTEST_FILES "${PYBIND11_TEST_FILES}")
 
-# bash-based cmake target test
-configure_file(test_cmake_target.sh test_cmake_target.sh @ONLY)
-configure_file(test_cmake_target/main.cpp test_cmake_target/main.cpp @ONLY)
-configure_file(test_cmake_target/CMakeLists.txt test_cmake_target/CMakeLists.txt @ONLY)
-if(CMAKE_VERSION VERSION_LESS 3.0)
-    add_custom_target(test_cmtgt
-        COMMENT "Skipping test of exported target for CMake < 3.0")
-else()
-    add_custom_target(test_cmtgt
-        COMMAND bash -x test_cmake_target.sh
-        WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/tests
-        COMMENT "Testing exported target")
-endif()
 
 # Check if Eigen is available; if not, remove from PYBIND11_TEST_FILES (but
 # keep it in PYBIND11_PYTEST_FILES, so that we get the "eigen is not installed"
@@ -81,7 +68,6 @@ endif()
 # Create the binding library
 pybind11_add_module(pybind11_tests pybind11_tests.cpp
   ${PYBIND11_TEST_FILES} ${PYBIND11_HEADERS})
-add_dependencies(pybind11_tests test_cmtgt)
 
 pybind11_enable_warnings(pybind11_tests)
 
@@ -118,6 +104,22 @@ add_custom_target(pytest COMMAND ${PYTHON_EXECUTABLE} -m pytest -rws ${PYBIND11_
 if(PYBIND11_TEST_OVERRIDE)
   add_custom_command(TARGET pytest POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E echo "Note: not all tests run: -DPYBIND11_TEST_OVERRIDE is in effect")
+endif()
+
+# bash-based cmake target test
+configure_file(test_cmake_target.sh test_cmake_target.sh @ONLY)
+configure_file(test_cmake_target/main.cpp test_cmake_target/main.cpp @ONLY)
+configure_file(test_cmake_target/CMakeLists.txt test_cmake_target/CMakeLists.txt @ONLY)
+if(CMAKE_VERSION VERSION_LESS 3.0)
+    #add_custom_target(test_cmtgt
+    add_custom_command(TARGET pytest POST_BUILD
+        COMMENT "Skipping test of exported target for CMake < 3.0")
+else()
+    #add_custom_target(test_cmtgt
+    add_custom_command(TARGET pytest POST_BUILD
+        COMMAND bash -x test_cmake_target.sh
+        WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/tests
+        COMMENT "Testing exported target")
 endif()
 
 # And another to show the .so size and, if a previous size, compare it:
