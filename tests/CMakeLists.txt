@@ -109,10 +109,7 @@ endif()
 configure_file(test_cmake_target.sh test_cmake_target.sh @ONLY)
 configure_file(test_cmake_target/main.cpp test_cmake_target/main.cpp @ONLY)
 configure_file(test_cmake_target/CMakeLists.txt test_cmake_target/CMakeLists.txt @ONLY)
-if(CMAKE_VERSION VERSION_LESS 3.0)
-    add_custom_command(TARGET pytest POST_BUILD
-        COMMENT "Skipping test of exported target for CMake < 3.0")
-else()
+if(NOT (CMAKE_VERSION VERSION_LESS 3.0))
     add_custom_command(TARGET pytest POST_BUILD
         COMMAND bash -x test_cmake_target.sh
         WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/tests
