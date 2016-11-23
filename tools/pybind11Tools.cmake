@@ -52,15 +52,38 @@ endif()
 #set(PYTHON_MODULE_EXTENSION ${PYTHON_MODULE_EXTENSION} CACHE INTERNAL "")
 
 # Build a Python extension module:
-# pybind11_add_module(<name> source1 [source2 ...])
-# pybind11_add_module(<name> [MODULE | SHARED] [LTO] [EXCLUDE_FROM_ALL] source1 [source2 ...])
+# pybind11_add_module(<name> [MODULE | SHARED] [EXCLUDE_FROM_ALL] source1 [source2 ...])
 #
-#function(pybind11_add_module(target_name lib_type lto exclude_from_all)
 function(pybind11_add_module target_name)
+  set(lib_type "MODULE")
+  set(do_lto True)
+  set(exclude_from_all "")
+  set(sources "")
 
-  add_library(${target_name} MODULE ${ARGN})
+  set(_args_to_try "${ARGN}")
+  foreach(_ex_arg IN LISTS _args_to_try)
+    message("arg ${_ex_arg}")
+    if(${_ex_arg} STREQUAL "MODULE")
+      set(lib_type "MODULE")
+    elseif(${_ex_arg} STREQUAL "SHARED")
+      set(lib_type "SHARED")
+    elseif(${_ex_arg} STREQUAL "EXCLUDE_FROM_ALL")
+      set(exclude_from_all "EXCLUDE_FROM_ALL")
+    else()
+      list(APPEND sources "${_ex_arg}")
+    endif()
+  endforeach()
+
+  message("building module ${target_name}")
+  message("lib_type ${lib_type}")
+  message("exclude_from_all ${exclude_from_all}")
+  message("sources ${sources}")
+
+  add_library(${target_name} ${lib_type} ${exclude_from_all} ${sources})
+
   target_include_directories(${target_name}
-    PRIVATE ${PYBIND11_INCLUDE_DIR}
+    PRIVATE ${PYBIND11_INCLUDE_DIR}  # from project CMakeLists.txt
+    PRIVATE ${pybind11_INCLUDE_DIR}  # from pybind11Config
     PRIVATE ${PYTHON_INCLUDE_DIRS})
 
   # The prefix and extension are provided by FindPythonLibsNew.cmake

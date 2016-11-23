@@ -4,7 +4,7 @@
 cd .. && make && make install
 
 # enter mini CMake setup
-cd tests/test_cmake_target/
+cd tests/test_installed_target/
 
 # configure and build mini CMake setup
 cmake -H. -Bbuild \
@@ -15,4 +15,4 @@ cmake -H. -Bbuild \
 cd build && make
 
 # test importable
-@PYTHON_EXECUTABLE@ -c "import test_cmake_target; assert test_cmake_target.add(1, 2) == 3; print('test_cmake_target imports and runs')"
+@PYTHON_EXECUTABLE@ -c "import test_installed_target; assert test_installed_target.add(1, 2) == 3; print('test_installed_target imports and runs')"

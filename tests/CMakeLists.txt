@@ -106,12 +106,16 @@ if(PYBIND11_TEST_OVERRIDE)
 endif()
 
 # bash-based cmake target test
-configure_file(test_cmake_target.sh test_cmake_target.sh @ONLY)
-configure_file(test_cmake_target/main.cpp test_cmake_target/main.cpp @ONLY)
-configure_file(test_cmake_target/CMakeLists.txt test_cmake_target/CMakeLists.txt @ONLY)
+configure_file(test_installed_target.sh test_installed_target.sh @ONLY)
+configure_file(test_installed_target/main.cpp test_installed_target/main.cpp @ONLY)
+configure_file(test_installed_target/CMakeLists.txt test_installed_target/CMakeLists.txt @ONLY)
+configure_file(test_installed_module.sh test_installed_module.sh @ONLY)
+configure_file(test_installed_module/main.cpp test_installed_module/main.cpp @ONLY)
+configure_file(test_installed_module/CMakeLists.txt test_installed_module/CMakeLists.txt @ONLY)
 if(NOT (CMAKE_VERSION VERSION_LESS 3.0))
     add_custom_command(TARGET pytest POST_BUILD
-        COMMAND bash -x test_cmake_target.sh
+        COMMAND bash -x test_installed_target.sh
+        COMMAND bash -x test_installed_module.sh
         WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/tests
         COMMENT "Testing exported target")
 endif()

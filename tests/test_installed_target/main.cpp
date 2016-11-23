@@ -12,12 +12,12 @@ int subtract(int i, int j) {
 
 namespace py = pybind11;
 
-PYBIND11_PLUGIN(test_cmake_target) {
-    py::module m("test_cmake_target", R"pbdoc(
+PYBIND11_PLUGIN(test_installed_target) {
+    py::module m("test_installed_target", R"pbdoc(
         Pybind11 example plugin
         -----------------------
 
-        .. currentmodule:: test_cmake_target
+        .. currentmodule:: test_installed_target
 
         .. autosummary::
            :toctree: _generate
