@@ -28,21 +28,23 @@ find_package(PythonLibsNew ${PYBIND11_PYTHON_VERSION} REQUIRED)
 
 include(CheckCXXCompilerFlag)
 
-if(NOT MSVC AND NOT PYBIND11_CPP_STANDARD)
-  check_cxx_compiler_flag("-std=c++14" HAS_CPP14_FLAG)
-  check_cxx_compiler_flag("-std=c++11" HAS_CPP11_FLAG)
-
-  if (HAS_CPP14_FLAG)
-    set(PYBIND11_CPP_STANDARD -std=c++14)
-  elseif (HAS_CPP11_FLAG)
-    set(PYBIND11_CPP_STANDARD -std=c++11)
-  else()
-    message(FATAL_ERROR "Unsupported compiler -- pybind11 requires C++11 support!")
+function(select_cxx_standard)
+  if(NOT MSVC AND NOT PYBIND11_CPP_STANDARD)
+    check_cxx_compiler_flag("-std=c++14" HAS_CPP14_FLAG)
+    check_cxx_compiler_flag("-std=c++11" HAS_CPP11_FLAG)
+  
+    if (HAS_CPP14_FLAG)
+      set(PYBIND11_CPP_STANDARD -std=c++14)
+    elseif (HAS_CPP11_FLAG)
+      set(PYBIND11_CPP_STANDARD -std=c++11)
+    else()
+      message(FATAL_ERROR "Unsupported compiler -- pybind11 requires C++11 support!")
+    endif()
+  
+    set(PYBIND11_CPP_STANDARD ${PYBIND11_CPP_STANDARD} CACHE STRING
+        "C++ standard flag, e.g. -std=c++11 or -std=c++14. Defaults to latest available." FORCE)
   endif()
-
-  set(PYBIND11_CPP_STANDARD ${PYBIND11_CPP_STANDARD} CACHE STRING
-      "C++ standard flag, e.g. -std=c++11 or -std=c++14. Defaults to latest available." FORCE)
-endif()
+endfunction()
 
 # Cache variables so pybind11_add_module can be used in parent projects
 #set(PYBIND11_INCLUDE_DIR "${CMAKE_CURRENT_LIST_DIR}/include" CACHE INTERNAL "")
@@ -62,7 +64,6 @@ function(pybind11_add_module target_name)
 
   set(_args_to_try "${ARGN}")
   foreach(_ex_arg IN LISTS _args_to_try)
-    message("arg ${_ex_arg}")
     if(${_ex_arg} STREQUAL "MODULE")
       set(lib_type "MODULE")
     elseif(${_ex_arg} STREQUAL "SHARED")
@@ -73,11 +74,6 @@ function(pybind11_add_module target_name)
       list(APPEND sources "${_ex_arg}")
     endif()
   endforeach()
-
-  message("building module ${target_name}")
-  message("lib_type ${lib_type}")
-  message("exclude_from_all ${exclude_from_all}")
-  message("sources ${sources}")
 
   add_library(${target_name} ${lib_type} ${exclude_from_all} ${sources})
 
@@ -111,6 +107,7 @@ function(pybind11_add_module target_name)
     target_link_libraries(${target_name} PRIVATE "-undefined dynamic_lookup")
   endif()
 
+  select_cxx_standard()
   if(NOT MSVC)
     # Make sure C++11/14 are enabled
     target_compile_options(${target_name} PUBLIC ${PYBIND11_CPP_STANDARD})
@@ -160,6 +157,15 @@ function(pybind11_add_module target_name)
     set_property(TARGET ${target_name} APPEND_STRING PROPERTY LINK_FLAGS_MINSIZEREL /LTCG)
     set_property(TARGET ${target_name} APPEND_STRING PROPERTY LINK_FLAGS_RELWITHDEBINFO /LTCG)
   endif()
+
+  message("building module ${target_name}")
+  message("lib_type ${lib_type}")
+  message("exclude_from_all ${exclude_from_all}")
+  message("sources ${sources}")
+  get_property(_py TARGET ${target_name} PROPERTY INCLUDE_DIRECTORIES)
+  get_property(_cxx TARGET ${target_name} PROPERTY COMPILE_OPTIONS)
+  message("info from pybind11_add_module ${_py} ${_cxx}")
+
 endfunction()
 
 # Compile with compiler warnings turned on
