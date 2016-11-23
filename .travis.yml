@@ -106,6 +106,7 @@ script:
     -DPYBIND11_PYTHON_VERSION=$PYTHON
     -DPYBIND11_CPP_STANDARD=$CPP
     -DPYBIND11_WERROR=ON
+- $SCRIPT_RUN_PREFIX make install
 - $SCRIPT_RUN_PREFIX make pytest -j 2
 after_script:
 - if [ -n "$DOCKER" ]; then docker stop "$containerid"; docker rm "$containerid"; fi
