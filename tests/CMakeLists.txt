@@ -105,19 +105,23 @@ if(PYBIND11_TEST_OVERRIDE)
     COMMAND ${CMAKE_COMMAND} -E echo "Note: not all tests run: -DPYBIND11_TEST_OVERRIDE is in effect")
 endif()
 
-# bash-based cmake target test
-configure_file(test_cmake_target.sh test_cmake_target.sh @ONLY)
-configure_file(test_cmake_target/main.cpp test_cmake_target/main.cpp @ONLY)
-configure_file(test_cmake_target/CMakeLists.txt test_cmake_target/CMakeLists.txt @ONLY)
-if(CMAKE_VERSION VERSION_LESS 3.0)
-    add_custom_command(TARGET pytest POST_BUILD
-        COMMENT "Skipping test of exported target for CMake < 3.0")
-else()
-    add_custom_command(TARGET pytest POST_BUILD
-        COMMAND bash -x test_cmake_target.sh
-        WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/tests
-        COMMENT "Testing exported target")
+# bash-based installed target tests
+configure_file(test_installed_target.sh test_installed_target.sh @ONLY)
+configure_file(test_installed_target/main.cpp test_installed_target/main.cpp @ONLY)
+configure_file(test_installed_target/CMakeLists.txt test_installed_target/CMakeLists.txt @ONLY)
+if(NOT (CMAKE_VERSION VERSION_LESS 3.0))
+  add_custom_command(TARGET pytest POST_BUILD
+                     COMMAND bash -x test_installed_target.sh
+                     WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/tests
+                     COMMENT "Testing module from installed target")
 endif()
+configure_file(test_installed_module.sh test_installed_module.sh @ONLY)
+configure_file(test_installed_module/main.cpp test_installed_module/main.cpp @ONLY)
+configure_file(test_installed_module/CMakeLists.txt test_installed_module/CMakeLists.txt @ONLY)
+add_custom_command(TARGET pytest POST_BUILD
+                   COMMAND bash -x test_installed_module.sh
+                   WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/tests
+                   COMMENT "Testing module from installed module")
 
 # And another to show the .so size and, if a previous size, compare it:
 add_custom_command(TARGET pybind11_tests POST_BUILD
