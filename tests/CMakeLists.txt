@@ -105,23 +105,50 @@ if(PYBIND11_TEST_OVERRIDE)
     COMMAND ${CMAKE_COMMAND} -E echo "Note: not all tests run: -DPYBIND11_TEST_OVERRIDE is in effect")
 endif()
 
-# bash-based installed target tests
-configure_file(test_installed_target.sh test_installed_target.sh @ONLY)
-configure_file(test_installed_target/main.cpp test_installed_target/main.cpp @ONLY)
-configure_file(test_installed_target/CMakeLists.txt test_installed_target/CMakeLists.txt @ONLY)
-if(NOT (CMAKE_VERSION VERSION_LESS 3.0))
-  add_custom_command(TARGET pytest POST_BUILD
-                     COMMAND bash -x test_installed_target.sh
-                     WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/tests
-                     COMMENT "Testing module from installed target")
+# test use of installation
+if(PYBIND11_INSTALL)
+  if(NOT CMAKE_VERSION VERSION_LESS 3.0)
+    add_custom_target(test_installed_target
+      COMMAND ${CMAKE_COMMAND}
+              "-DCMAKE_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/test_install"
+              -P "${PROJECT_BINARY_DIR}/cmake_install.cmake"
+      COMMAND ${CMAKE_CTEST_COMMAND}
+              --build-and-test "${CMAKE_CURRENT_SOURCE_DIR}/test_installed_target"
+                               "${CMAKE_CURRENT_BINARY_DIR}/test_installed_target"
+              --build-noclean
+              --build-generator ${CMAKE_GENERATOR}
+              $<$<BOOL:${CMAKE_GENERATOR_PLATFORM}>:--build-generator-platform> ${CMAKE_GENERATOR_PLATFORM}
+              --build-makeprogram ${CMAKE_MAKE_PROGRAM}
+              --build-options "-DCMAKE_PREFIX_PATH=${PROJECT_BINARY_DIR}/test_install"
+                              "-DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}"
+                              "-DPYTHON_EXECUTABLE=${PYTHON_EXECUTABLE}"
+                              "-DPYBIND11_CPP_STANDARD=${PYBIND11_CPP_STANDARD}"
+              --test-command ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test_installed_target/test.py
+    )
+  else()
+    add_custom_target(test_installed_target)
+  endif()
+
+  add_custom_target(test_installed_module
+    COMMAND ${CMAKE_COMMAND}
+            "-DCMAKE_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/test_install"
+            -P "${PROJECT_BINARY_DIR}/cmake_install.cmake"
+    COMMAND ${CMAKE_CTEST_COMMAND}
+            --build-and-test "${CMAKE_CURRENT_SOURCE_DIR}/test_installed_module"
+                             "${CMAKE_CURRENT_BINARY_DIR}/test_installed_module"
+            --build-noclean
+            --build-generator ${CMAKE_GENERATOR}
+            $<$<BOOL:${CMAKE_GENERATOR_PLATFORM}>:--build-generator-platform> ${CMAKE_GENERATOR_PLATFORM}
+            --build-makeprogram ${CMAKE_MAKE_PROGRAM}
+            --build-options "-DCMAKE_PREFIX_PATH=${PROJECT_BINARY_DIR}/test_install"
+                            "-DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}"
+                            "-DPYTHON_EXECUTABLE=${PYTHON_EXECUTABLE}"
+                            "-DPYBIND11_CPP_STANDARD=${PYBIND11_CPP_STANDARD}"
+            --test-command ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test_installed_module/test.py
+  )
+  add_custom_target(test_install)
+  add_dependencies(test_install test_installed_target test_installed_module)
 endif()
-configure_file(test_installed_module.sh test_installed_module.sh @ONLY)
-configure_file(test_installed_module/main.cpp test_installed_module/main.cpp @ONLY)
-configure_file(test_installed_module/CMakeLists.txt test_installed_module/CMakeLists.txt @ONLY)
-add_custom_command(TARGET pytest POST_BUILD
-                   COMMAND bash -x test_installed_module.sh
-                   WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/tests
-                   COMMENT "Testing module from installed module")
 
 # And another to show the .so size and, if a previous size, compare it:
 add_custom_command(TARGET pybind11_tests POST_BUILD

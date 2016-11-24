@@ -1,4 +1,4 @@
-# CMakeLists.txt -- Build system for the pybind11 modules
+# tools/pybind11Tools.cmake -- Build system for the pybind11 modules
 #
 # Copyright (c) 2015 Wenzel Jakob <wenzel@inf.ethz.ch>
 #
@@ -17,7 +17,7 @@ cmake_minimum_required(VERSION 2.8.12)
 
 #option(PYBIND11_INSTALL "Install pybind11 header files?" ${PYBIND11_MASTER_PROJECT})
 #option(PYBIND11_TEST    "Build pybind11 test suite?"     ${PYBIND11_MASTER_PROJECT})
-option(PYBIND11_WERROR  "Report all warnings as errors"  OFF)
+#option(PYBIND11_WERROR  "Report all warnings as errors"  OFF)
 
 # Add a CMake parameter for choosing a desired Python version
 set(PYBIND11_PYTHON_VERSION "" CACHE STRING "Python version to use for compiling modules")
@@ -168,22 +168,22 @@ function(pybind11_add_module target_name)
 
 endfunction()
 
-# Compile with compiler warnings turned on
-function(pybind11_enable_warnings target_name)
-  if(MSVC)
-    target_compile_options(${target_name} PRIVATE /W4)
-  else()
-    target_compile_options(${target_name} PRIVATE -Wall -Wextra -Wconversion)
-  endif()
-
-  if(PYBIND11_WERROR)
-    if(MSVC)
-      target_compile_options(${target_name} PRIVATE /WX)
-    else()
-      target_compile_options(${target_name} PRIVATE -Werror)
-    endif()
-  endif()
-endfunction()
+## Compile with compiler warnings turned on
+#function(pybind11_enable_warnings target_name)
+#  if(MSVC)
+#    target_compile_options(${target_name} PRIVATE /W4)
+#  else()
+#    target_compile_options(${target_name} PRIVATE -Wall -Wextra -Wconversion)
+#  endif()
+#
+#  if(PYBIND11_WERROR)
+#    if(MSVC)
+#      target_compile_options(${target_name} PRIVATE /WX)
+#    else()
+#      target_compile_options(${target_name} PRIVATE -Werror)
+#    endif()
+#  endif()
+#endfunction()
 
 #set(PYBIND11_HEADERS
 #  include/pybind11/attr.h

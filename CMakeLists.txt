@@ -17,7 +17,7 @@ endif()
 
 option(PYBIND11_INSTALL "Install pybind11 header files?" ${PYBIND11_MASTER_PROJECT})
 option(PYBIND11_TEST    "Build pybind11 test suite?"     ${PYBIND11_MASTER_PROJECT})
-#option(PYBIND11_WERROR  "Report all warnings as errors"  OFF)
+option(PYBIND11_WERROR  "Report all warnings as errors"  OFF)
 
 # Add a CMake parameter for choosing a desired Python version
 #set(PYBIND11_PYTHON_VERSION "" CACHE STRING "Python version to use for compiling modules")
@@ -135,23 +135,23 @@ set(PYTHON_MODULE_EXTENSION ${PYTHON_MODULE_EXTENSION} CACHE INTERNAL "")
 #    set_property(TARGET ${target_name} APPEND_STRING PROPERTY LINK_FLAGS_RELWITHDEBINFO /LTCG)
 #  endif()
 #endfunction()
-#
-## Compile with compiler warnings turned on
-#function(pybind11_enable_warnings target_name)
-#  if(MSVC)
-#    target_compile_options(${target_name} PRIVATE /W4)
-#  else()
-#    target_compile_options(${target_name} PRIVATE -Wall -Wextra -Wconversion)
-#  endif()
-#
-#  if(PYBIND11_WERROR)
-#    if(MSVC)
-#      target_compile_options(${target_name} PRIVATE /WX)
-#    else()
-#      target_compile_options(${target_name} PRIVATE -Werror)
-#    endif()
-#  endif()
-#endfunction()
+
+# Compile with compiler warnings turned on
+function(pybind11_enable_warnings target_name)
+  if(MSVC)
+    target_compile_options(${target_name} PRIVATE /W4)
+  else()
+    target_compile_options(${target_name} PRIVATE -Wall -Wextra -Wconversion)
+  endif()
+
+  if(PYBIND11_WERROR)
+    if(MSVC)
+      target_compile_options(${target_name} PRIVATE /WX)
+    else()
+      target_compile_options(${target_name} PRIVATE -Werror)
+    endif()
+  endif()
+endfunction()
 
 include(pybind11Tools)
 
@@ -201,7 +201,8 @@ if(NOT (CMAKE_VERSION VERSION_LESS 3.0))  # CMake >= 3.0
   #   (2) we can get away with it since installation (headers) don't care about
   #   python version or C++ standard, and (3) this will make the easily target relocatable.
   add_library(pybind11 INTERFACE)
-  target_include_directories(pybind11 INTERFACE $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
+  target_include_directories(pybind11 INTERFACE $<BUILD_INTERFACE:${PYBIND11_INCLUDE_DIR}>
+                                                $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
   if(APPLE)
       target_link_libraries(pybind11 INTERFACE "-undefined dynamic_lookup")
   endif()
