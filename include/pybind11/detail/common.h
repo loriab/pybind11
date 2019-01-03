@@ -70,6 +70,13 @@
 #  if _MSC_FULL_VER < 190024210
 #    error pybind11 requires MSVC 2015 update 3 or newer
 #  endif
+#elif defined(__INTEL_COMPILER)
+#  if __INTEL_COMPILER >= 1700
+#    define PYBIND11_CPP14
+#    if __INTEL_COMPILER > 1900
+#      define PYBIND11_CPP17
+#    endif
+#  endif
 #endif
 
 #if !defined(PYBIND11_EXPORT)
